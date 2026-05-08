@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🐱 Từ điển hạt mèo – Review cộng đồng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        /* ===== RESET & VARIABLES ===== */
+        :root {
+            --cream: #fefaf5; --white: #ffffff; --border: #eedfcb; --accent: #b5723b;
+            --accent-light: #f2e5d9; --green: #2e5e2c; --green-light: #eef4e8;
+            --text: #2c2b28; --muted: #aa8b6e; --disease-bg: #fdede2; --disease-text: #bc6f34;
+            --shadow-sm: 0 4px 16px rgba(60,35,10,0.06); --shadow-md: 0 12px 32px rgba(60,35,10,0.12);
+            --radius: 24px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--text); padding: 28px 20px 60px; }
+        .container { max-width: 1440px; margin: 0 auto; }
+
+        /* ===== HEADER ===== */
+        .header { text-align: center; margin-bottom: 36px; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,5vw,2.6rem); color: var(--green); }
+        .header p { color: var(--muted); margin-top: 7px; font-size: 0.93rem; }
+
+        /* ===== DISCLAIMER ===== */
+        .disclaimer-box { background: #fff6f0; border-left: 5px solid var(--accent); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+        .disclaimer-title { font-weight: 700; color: var(--accent); font-size: 0.9rem; margin-bottom: 7px; }
+        .disclaimer-box p { font-size: 0.85rem; line-height: 1.6; color: #5a4a3a; }
+        .disclaimer-note { font-size: 0.73rem; color: #b89a7a; font-style: italic; margin-top: 10px; }
+
+        /* ===== FILTER PANEL ===== */
+        .filter-panel { background: var(--white); border-radius: var(--radius); padding: 24px; margin-bottom: 28px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .filter-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; align-items: end; }
+        .filter-group label { display: block; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.5px; color: var(--green); text-transform: uppercase; margin-bottom: 6px; }
+        .filter-group input, .filter-group select { width: 100%; padding: 10px 16px; border-radius: 60px; border: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--white); color: var(--text); }
+        .checkbox-section-label { font-weight: 600; font-size: 0.74rem; letter-spacing: 0.5px; color: var(--green); text-transform: uppercase; display: block; margin-bottom: 8px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px 14px; background: var(--cream); padding: 12px 14px; border-radius: 18px; border: 1px solid var(--border); }
+        .checkbox-group label { font-weight: 400; font-size: 0.8rem; color: #5f4c38; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+        .filter-note { font-size: 0.72rem; color: var(--muted); margin-top: 8px; font-style: italic; }
+        .btn-reset { background: var(--accent-light); border: none; padding: 10px 26px; border-radius: 60px; font-weight: 600; cursor: pointer; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%; }
+        .compare-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px dashed var(--border); padding-top: 18px; margin-top: 18px; }
+        .selected-info { font-size: 0.84rem; color: var(--muted); }
+        .compare-btn { background: var(--accent); color: white; border: none; padding: 9px 24px; border-radius: 60px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .compare-btn:disabled { background: #d1bc9c; cursor: not-allowed; }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .result-count { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 6px 20px; border-radius: 60px; font-size: 0.84rem; font-weight: 600; }
+        .export-btn { background: var(--green-light); color: var(--green); border: 1px solid #c2d8bb; padding: 8px 18px; border-radius: 60px; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .export-btn:hover { background: #d8eccc; }
+
+        /* ===== PRODUCT GRID & CARD ===== */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 24px; margin-bottom: 44px; }
+
+        .card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .compare-checkbox { position: absolute; top: 18px; right: 18px; width: 18px; height: 18px; accent-color: var(--accent); z-index: 2; cursor: pointer; }
+        .card-content { padding: 20px 22px 22px; border-radius: var(--radius); overflow: hidden; }
+        .card-header { display: flex; gap: 16px; margin-bottom: 14px; }
+        .product-image-wrapper { width: 80px; height: 80px; background: #fcf7f2; border-radius: 14px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; flex-shrink: 0; }
+        .product-image { width: 100%; height: 100%; object-fit: contain; }
+        .image-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; opacity: 0; transition: opacity 0.2s; border-radius: 14px; pointer-events: none; text-align: center; }
+        .product-image-wrapper:hover .image-overlay { opacity: 1; }
+        .product-info { flex: 1; min-width: 0; }
+        .card h3 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--green); margin-bottom: 3px; padding-right: 28px; }
+        .brand { font-size: 0.74rem; color: var(--muted); margin-bottom: 7px; }
+        .price-tag { background: var(--accent-light); display: inline-block; padding: 4px 13px; border-radius: 60px; font-size: 0.74rem; font-weight: 700; color: var(--accent); }
+        .updated { font-weight: 400; font-size: 0.68rem; }
+        .stats { display: flex; flex-wrap: wrap; gap: 6px; background: #fcf7f2; padding: 10px; border-radius: 16px; margin: 12px 0; }
+        .stat { background: var(--white); padding: 3px 10px; border-radius: 30px; font-size: 0.69rem; font-weight: 500; border: 1px solid var(--border); }
+        .badge-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .badge { padding: 3px 10px; border-radius: 40px; font-size: 0.67rem; font-weight: 600; }
+        .badge.disease { background: var(--disease-bg); color: var(--disease-text); }
+
+        /* ===== DETAILS / ANALYSIS ===== */
+        details { background: var(--cream); border-radius: 16px; border: 1px solid #f0e2d0; overflow: hidden; }
+        summary { font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--green); padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 6px; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶"; font-size: 0.6rem; transition: transform 0.2s; }
+        details[open] summary::before { transform: rotate(90deg); }
+        .review-detail { padding: 0 14px 14px; font-size: 0.78rem; line-height: 1.5; display: flex; flex-direction: column; gap: 7px; }
+        .pros-text   { color: #2c6e2a; background: #eef6ea; padding: 7px 10px; border-radius: 12px; }
+        .cons-text   { color: #aa4a2e; background: #ffe7e2; padding: 7px 10px; border-radius: 12px; }
+        .verdict-text { background: #fff0e0; padding: 7px 10px; border-radius: 12px; font-weight: 500; }
+        .caution-text { background: #fff8f0; padding: 7px 10px; border-radius: 12px; border-left: 3px solid var(--accent); }
+        .plain-row   { padding: 7px 10px; font-size: 0.76rem; }
+
+        /* ===== REVIEW SECTION (sản phẩm) ===== */
+        .review-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .rating-summary { background: var(--accent-light); padding: 4px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 600; color: var(--accent); }
+        .btn-review-toggle { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; transition: background 0.1s; font-family: 'DM Sans', sans-serif; }
+        .btn-review-toggle:hover { background: var(--accent-light); }
+        .review-list { max-height: 260px; overflow-y: auto; margin-top: 10px; font-size: 0.74rem; }
+        .review-loading { font-style: italic; color: var(--muted); padding: 8px; font-size: 0.73rem; }
+        .review-item { background: #fefaf5; border-radius: 14px; padding: 8px 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .review-meta { display: flex; justify-content: space-between; color: #9b7a5c; font-size: 0.65rem; margin-bottom: 5px; }
+        .review-stars { color: #f5b042; letter-spacing: 1px; font-size: 0.7rem; }
+        .review-comment { font-size: 0.73rem; line-height: 1.45; }
+        .review-form { background: #fffcf5; border-radius: 16px; padding: 12px; margin-top: 10px; display: none; }
+        .review-form.open { display: block; }
+        .review-form input, .review-form select, .review-form textarea { width: 100%; padding: 7px 12px; border-radius: 40px; border: 1.5px solid var(--border); margin-bottom: 8px; font-size: 0.75rem; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--white); }
+        .review-form textarea { border-radius: 14px; resize: vertical; }
+        .review-form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-submit-review { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .btn-cancel-review { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 40px; font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .char-count { font-size: 0.65rem; color: var(--muted); text-align: right; margin-top: -6px; margin-bottom: 6px; }
+        .char-count.warn { color: #e07040; }
+
+        /* ===== REVIEW PLACEHOLDER (lazy load) ===== */
+        .review-placeholder { background: var(--cream); border-radius: 14px; padding: 10px 12px; color: var(--muted); font-size: 0.73rem; font-style: italic; cursor: pointer; border: 1px dashed var(--border); text-align: center; margin-top: 8px; transition: background 0.15s; }
+        .review-placeholder:hover { background: var(--accent-light); color: var(--accent); }
+
+        /* ===== PRICE TOOL ===== */
+        .price-tool { background: var(--white); border-radius: var(--radius); padding: 22px 26px; margin-bottom: 36px; border: 1px solid var(--border); }
+        .price-tool h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--green); margin-bottom: 14px; }
+        .tool-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+        .tool-group label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+        .tool-group input { padding: 10px 16px; border-radius: 60px; border: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 180px; }
+        .tool-btn { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 60px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .price-result { background: var(--accent-light); padding: 8px 20px; border-radius: 60px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+
+        /* ===== WEBSITE REVIEW SECTION ===== */
+        .website-review-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 28px 30px;
+            margin-bottom: 36px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .website-review-section h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--green);
+            margin-bottom: 4px;
+        }
+        .website-review-desc {
+            font-size: 0.84rem;
+            color: var(--muted);
+            margin-bottom: 22px;
+        }
+        .website-review-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+        @media (max-width: 780px) {
+            .website-review-inner { grid-template-columns: 1fr; }
+        }
+
+        /* Danh sách đánh giá web */
+        .wr-list-panel {}
+        .wr-summary-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: var(--green-light);
+            border-radius: 14px;
+            padding: 10px 16px;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
+            color: var(--green);
+            font-weight: 600;
+        }
+        .wr-avg-score {
+            font-size: 1.3rem;
+            font-family: 'Playfair Display', serif;
+            color: var(--green);
+        }
+        .wr-list {
+            max-height: 340px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .wr-item {
+            background: var(--cream);
+            border-radius: 16px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+        .wr-item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .wr-item-nick {
+            font-weight: 600;
+            color: var(--green);
+            font-size: 0.75rem;
+        }
+        .wr-item-date {
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+        .wr-item-stars {
+            color: #f5b042;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+        .wr-item-comment {
+            color: var(--text);
+            font-size: 0.76rem;
+        }
+        .wr-empty {
+            text-align: center;
+            color: var(--muted);
+            font-style: italic;
+            font-size: 0.8rem;
+            padding: 24px 0;
+        }
+        .wr-loading {
+            text-align: center;
+            color: var(--muted);
+            font-style: italic;
+            font-size: 0.78rem;
+            padding: 20px 0;
+        }
+
+        /* Form đánh giá web */
+        .wr-form-panel {
+            background: #fffcf5;
+            border-radius: 20px;
+            padding: 20px 22px;
+            border: 1px dashed var(--border);
+        }
+        .wr-form-title {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--green);
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+        }
+        .wr-form-group { margin-bottom: 12px; }
+        .wr-form-group label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 5px;
+        }
+        .wr-form-group input,
+        .wr-form-group select {
+            width: 100%;
+            padding: 9px 16px;
+            border-radius: 60px;
+            border: 1.5px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            background: var(--white);
+            color: var(--text);
+        }
+        .wr-form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            background: var(--white);
+            color: var(--text);
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .wr-char-count {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 3px;
+        }
+        .wr-char-count.warn { color: #e07040; }
+        .wr-star-selector {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .wr-star-selector input[type="radio"] { display: none; }
+        .wr-star-selector label {
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.15s, transform 0.1s;
+            line-height: 1;
+        }
+        .wr-star-selector input[type="radio"]:checked ~ label,
+        .wr-star-selector label:hover,
+        .wr-star-selector label:hover ~ label { color: #ddd; }
+        /* RTL trick để highlight bên trái của sao được click */
+        .wr-star-selector { flex-direction: row-reverse; justify-content: flex-end; }
+        .wr-star-selector label:hover,
+        .wr-star-selector label:hover ~ label,
+        .wr-star-selector input[type="radio"]:checked ~ label { color: #f5b042 !important; }
+        .wr-submit-btn {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 10px 26px;
+            border-radius: 60px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            margin-top: 4px;
+            transition: background 0.15s, transform 0.1s;
+            width: 100%;
+        }
+        .wr-submit-btn:hover { background: #245020; }
+        .wr-submit-btn:active { transform: scale(0.98); }
+        .wr-submit-btn:disabled { background: #aac7a8; cursor: not-allowed; }
+        .wr-success-msg {
+            background: var(--green-light);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: var(--green);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .wr-success-msg.show { display: block; }
+        .wr-error-msg {
+            background: #fdecea;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #bc3a2e;
+            font-size: 0.76rem;
+            margin-top: 8px;
+            display: none;
+        }
+        .wr-error-msg.show { display: block; }
+
+        /* ===== MODAL ===== */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(20,10,0,0.55); align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+        .modal.open { display: flex; }
+        .modal-content { background: var(--white); width: min(1100px,100%); max-height: 88vh; overflow: auto; border-radius: var(--radius); padding: 28px; position: relative; }
+        .close-modal { position: absolute; right: 20px; top: 16px; font-size: 26px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
+        .compare-legend { font-size: 0.75rem; color: var(--muted); margin: 6px 0 16px; }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+        .compare-table th {
+            background: var(--green-light);
+            color: var(--green);
+            font-weight: 600;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            vertical-align: top;
+            text-align: left;
+        }
+        .compare-table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            vertical-align: top;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            line-height: 1.45;
+            max-width: 280px;
+        }
+        .compare-table tbody td:first-child {
+            background: var(--green-light);
+            font-weight: 600;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            width: 130px;
+        }
+        .cell-best  { background: #e4f5e4 !important; font-weight: 700; }
+        .cell-worst { background: #fdecea !important; }
+
+        /* ===== TOOLTIP ===== */
+        .tt {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted var(--accent);
+            background: #fff0e0;
+            border-radius: 4px;
+            padding: 0 3px;
+        }
+        .tt-box {
+            visibility: hidden;
+            width: 260px;
+            background: #1e1b18;
+            color: #fff5e8;
+            text-align: left;
+            border-radius: 12px;
+            padding: 10px 14px;
+            position: fixed;
+            z-index: 9999;
+            font-size: 0.72rem;
+            font-weight: normal;
+            line-height: 1.5;
+            opacity: 0;
+            transition: opacity 0.18s;
+            pointer-events: none;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        .tt:hover .tt-box,
+        .tt.active .tt-box {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ===== STATES ===== */
+        .loading-state { text-align: center; padding: 40px; color: var(--muted); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 36px; height: 36px; border: 3px solid #eedfcb; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+        .error-state { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 16px; padding: 20px; color: #c0392b; font-size: 0.85rem; text-align: center; }
+        .error-state code { display: block; margin-top: 8px; font-size: 0.75rem; color: #888; }
+        .retry-btn { background: var(--accent); color: white; border: none; padding: 8px 20px; border-radius: 40px; margin-top: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; }
+        .no-result { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); }
+
+        footer { text-align: center; font-size: 0.7rem; color: #c2a281; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 20px; }
+
+        @media (max-width: 780px) {
+            .product-grid { grid-template-columns: 1fr; }
+            .card-header { flex-direction: column; align-items: center; text-align: center; }
+            .product-image-wrapper { margin: 0 auto; }
+            .tool-group input { width: 130px; }
+            .compare-table tbody td:first-child { width: 90px; font-size: 0.68rem; white-space: normal; }
+            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 0.7rem; }
+            .modal-content { padding: 16px; }
+            .tt-box { width: 220px; }
+            .website-review-section { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🐾 Từ điển hạt mèo – Review cộng đồng</h1>
+        <p>🔍 Tìm kiếm · Lọc theo bệnh · So sánh · Upload ảnh · 📝 Đánh giá dùng chung</p>
+    </div>
+
+    <div class="disclaimer-box">
+        <p class="disclaimer-title">🐱 Lời nhắn nhỏ từ mình</p>
+        <p>Web dùng Google Sheets cho dữ liệu hạt và đánh giá. <strong>Di chuột (hoặc chạm) vào thuật ngữ (DMB, as-fed, Struvite…)</strong> để xem giải thích. Mọi người đều có thể viết review – chúng sẽ được lưu vào Google Sheet chung.</p>
+        <p class="disclaimer-note">* Mèo bệnh thận/tiết niệu cần được khám bác sĩ thú y để có phác đồ phù hợp.</p>
+    </div>
+
+    <div class="filter-panel">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>🔎 Tên / thương hiệu</label>
+                <input type="text" id="searchName" placeholder="VD: Royal Canin, Orijen" autocomplete="off">
+            </div>
+            <div class="filter-group">
+                <label>💰 Giá (VNĐ/kg)</label>
+                <select id="priceFilter">
+                    <option value="all">Tất cả</option>
+                    <option value="under200">Dưới 200k</option>
+                    <option value="200_300">200k – 300k</option>
+                    <option value="over300">Trên 300k</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📊 Sắp xếp</label>
+                <select id="sortSelect">
+                    <option value="default">Mặc định</option>
+                    <option value="price_asc">Giá tăng</option>
+                    <option value="price_desc">Giá giảm</option>
+                    <option value="protein_desc">Protein cao → thấp</option>
+                    <option value="carb_asc">Carb thấp → cao</option>
+                </select>
+            </div>
+            <div>
+                <button class="btn-reset" id="resetBtn">⟳ Xóa hết bộ lọc</button>
+            </div>
+        </div>
+        <div>
+            <span class="checkbox-section-label">🩺 Bệnh lý & Đối tượng (chọn nhiều – AND)</span>
+            <div id="diseaseCheckboxes" class="checkbox-group"></div>
+            <p class="filter-note">✅ Không chọn = hiện tất cả. Chọn nhiều = phải đáp ứng tất cả điều kiện.</p>
+        </div>
+        <div class="compare-bar">
+            <span id="selectedCountInfo" class="selected-info">📌 Chọn ít nhất 2 sản phẩm để so sánh</span>
+            <button class="compare-btn" id="compareBtn" disabled>🔍 So sánh</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div id="resultCount" class="result-count">📋 Đang tải dữ liệu...</div>
+        <button class="export-btn" id="exportBtn">⬇️ Xuất CSV</button>
+    </div>
+    <div id="productContainer" class="product-grid">
+        <div class="loading-state"><div class="spinner"></div><p>Đang đọc dữ liệu từ Google Sheets…</p></div>
+    </div>
+
+    <div class="price-tool">
+        <h4>💸 Tính giá thực tế /kg</h4>
+        <div class="tool-row">
+            <div class="tool-group">
+                <label>💰 Giá gói (VNĐ)</label>
+                <input type="number" id="toolPrice" placeholder="450000" min="0">
+            </div>
+            <div class="tool-group">
+                <label>⚖️ Trọng lượng (kg)</label>
+                <input type="number" id="toolWeight" step="any" placeholder="1.5" min="0">
+            </div>
+            <div><button class="tool-btn" id="calcPriceBtn">👉 Tính</button></div>
+            <div><span class="price-result" id="pricePerKgResult">— đ/kg</span></div>
+        </div>
+    </div>
+
+    <!-- ===== WEBSITE REVIEW SECTION ===== -->
+    <div class="website-review-section">
+        <h4>📝 Góp ý về trang web</h4>
+        <p class="website-review-desc">Bạn thấy giao diện, tính năng, độ hữu ích thế nào? Để lại ý kiến giúp mình cải thiện nhé! 🙏</p>
+        <div class="website-review-inner">
+
+            <!-- Danh sách đánh giá -->
+            <div class="wr-list-panel">
+                <div class="wr-summary-bar" id="wrSummaryBar">
+                    <span>⏳ Đang tải đánh giá…</span>
+                </div>
+                <div class="wr-list" id="wrList">
+                    <div class="wr-loading">Đang tải…</div>
+                </div>
+            </div>
+
+            <!-- Form gửi đánh giá -->
+            <div class="wr-form-panel">
+                <div class="wr-form-title">✍️ Viết đánh giá của bạn</div>
+
+                <div class="wr-form-group">
+                    <label>Tên bạn (không bắt buộc)</label>
+                    <input type="text" id="wrNick" placeholder="VD: Hà Nội, Mèo Sen…" maxlength="50" autocomplete="off">
+                </div>
+
+                <div class="wr-form-group">
+                    <label>Số sao</label>
+                    <!-- RTL trick: các radio từ 5 xuống 1, hiển thị ngược lại bằng flex row-reverse -->
+                    <div class="wr-star-selector" id="wrStarSelector">
+                        <input type="radio" name="wrRating" id="wrStar5" value="5"><label for="wrStar5" title="5 sao – Xuất sắc">★</label>
+                        <input type="radio" name="wrRating" id="wrStar4" value="4"><label for="wrStar4" title="4 sao – Tốt">★</label>
+                        <input type="radio" name="wrRating" id="wrStar3" value="3" checked><label for="wrStar3" title="3 sao – Tạm ổn">★</label>
+                        <input type="radio" name="wrRating" id="wrStar2" value="2"><label for="wrStar2" title="2 sao – Không ổn">★</label>
+                        <input type="radio" name="wrRating" id="wrStar1" value="1"><label for="wrStar1" title="1 sao – Rất tệ">★</label>
+                    </div>
+                </div>
+
+                <div class="wr-form-group">
+                    <label>Nhận xét (tối thiểu 5 ký tự)</label>
+                    <textarea id="wrComment" rows="3" placeholder="Bạn thích/không thích điều gì? Thiếu tính năng gì?…" maxlength="500"></textarea>
+                    <div class="wr-char-count" id="wrCharCount">0 / 500</div>
+                </div>
+
+                <button class="wr-submit-btn" id="wrSubmitBtn">📨 Gửi góp ý</button>
+                <div class="wr-success-msg" id="wrSuccessMsg">✅ Cảm ơn bạn đã góp ý! Đánh giá đã được lưu.</div>
+                <div class="wr-error-msg" id="wrErrorMsg"></div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END WEBSITE REVIEW SECTION ===== -->
+
+    <footer>📌 Dữ liệu hạt từ Google Sheets CSV. 📝 Đánh giá từ Google Apps Script – mọi người đều xem và viết được.<br>⚠️ Ảnh được lưu trên máy của bạn (localStorage), không chia sẻ với người khác.</footer>
+</div>
+
+<div id="compareModal" class="modal" role="dialog" aria-modal="true" aria-label="So sánh sản phẩm">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModalBtn" aria-label="Đóng">&times;</button>
+        <h2 style="font-family:'Playfair Display',serif;color:var(--green);margin-bottom:6px;">📊 So sánh chi tiết</h2>
+        <p class="compare-legend">🟢 Xanh = tốt nhất &nbsp;|&nbsp; 🔴 Đỏ = kém nhất trong nhóm</p>
+        <div id="compareTableContainer" style="overflow-x:auto;"></div>
+    </div>
+</div>
+
+<script>
+// ==================== CẤU HÌNH ====================
+const CSV_URL         = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRdHQZEp0DN-MCTgAHmHtQbyV6WbeOG3V_8OgewWNLKTQ61baYTO7RnDrnyomwwXwHanhMePNePqnR/pub?gid=0&single=true&output=csv';
+const REVIEWS_API_URL = 'https://script.google.com/macros/s/AKfycbzwn9YwZGlWEIPNHU9XAw3nu05nnlu_EECeOjfilclyIl6x_0FpleyRFkRJXJviDjq9/exec';
+
+const FETCH_TIMEOUT_MS   = 8000;
+const MAX_COMPARE        = 3;
+const MAX_COMMENT_LENGTH = 500;
+const REVIEW_COOLDOWN_MS = 60 * 1000;
+const MAX_IMAGE_SIZE_MB  = 2;
+
+// ==================== STATE ====================
+let productsData   = [];
+let filteredData   = [];
+const selectedProducts = new Set();
+const reviewCache      = new Map();
+const imageStore       = {};
+
+// ==================== GLOSSARY ====================
+const GLOSSARY = [
+    { term: 'Grain-Free', def: 'Không ngũ cốc nhưng vẫn có thể nhiều tinh bột từ legume.' },
+    { term: 'Struvite',   def: 'Tinh thể magie amoni photphat – thường gặp khi nước tiểu kiềm, giàu magie.' },
+    { term: 'CKD',        def: 'Chronic Kidney Disease – bệnh thận mãn tính, cần kiểm soát photpho.' },
+    { term: 'IBD',        def: 'Viêm ruột mãn tính – cần đạm dễ tiêu, nguồn đạm mới (novel protein).' },
+    { term: 'Taurine',    def: 'Axit amin thiết yếu cho tim và mắt mèo, không thể tự tổng hợp.' },
+    { term: 'DMB',        def: 'Dry Matter Basis – chỉ số trên chất khô (loại bỏ nước), để so sánh chuẩn.' },
+    { term: 'as-fed',     def: 'Chỉ số trên khối lượng ẩm như ghi trên bao bì sản phẩm.' },
+    { term: 'Photpho',    def: 'Khoáng chất cần hạn chế ở mèo mắc bệnh thận (CKD).' },
+    { term: 'Magie',      def: 'Liên quan đến tinh thể struvite – nên dưới 0.10% as-fed.' },
+    { term: 'Carb',       def: 'Carbohydrate – mèo nên chọn thức ăn có <30% DMB.' },
+    { term: 'Tro',        def: 'Khoáng tổng hợp, thấp tốt hơn cho tiết niệu (<7% as-fed).' },
+].sort((a, b) => b.term.length - a.term.length);
+
+// ==================== DISEASE OPTIONS ====================
+const allDiseaseOptions = [
+    { value: 'tieu_nieu',        label: '🚰 Tiết niệu / Struvite' },
+    { value: 'than',             label: '🩸 Bệnh thận CKD' },
+    { value: 'tieu_duong',       label: '🍬 Tiểu đường' },
+    { value: 'gan',              label: '🧫 Bệnh gan' },
+    { value: 'ibd',              label: '🌾 IBD' },
+    { value: 'di_ung',           label: '🌿 Dị ứng tiêu hóa' },
+    { value: 'beo_phi',          label: '⚖️ Béo phì' },
+    { value: 'viem_khop',        label: '🦴 Viêm khớp' },
+    { value: 'tim',              label: '❤️ Bệnh tim' },
+    { value: 'meo_con',          label: '🐱 Mèo con (0–12 tháng)' },
+    { value: 'meo_truong_thanh', label: '🐈 Mèo trưởng thành (1–7 tuổi)' },
+    { value: 'meo_gia',          label: '🧓 Mèo già (>7 tuổi)' },
+    { value: 'mang_thai',        label: '🤰 Mèo mang thai' },
+    { value: 'cho_con_bu',       label: '🍼 Mèo cho con bú' },
+    { value: 'triet_san',        label: '✂️ Mèo đã triệt sản' },
+    { value: 'khoe',             label: '💪 Mèo khỏe mạnh' },
+];
+const diseaseMap = Object.fromEntries(allDiseaseOptions.map(o => [o.value, o.label]));
+
+// ==================== UTILITIES ====================
+function escHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[m]);
+}
+function fmt(n) { return Number(n).toLocaleString('vi-VN') + ' đ'; }
+function priceDisplay(p) { return `${fmt(p.priceMin)} – ${fmt(p.priceMax)} /kg`; }
+function starsHtml(rating, maxStar = 5) {
+    let s = '';
+    for (let i = 1; i <= maxStar; i++)
+        s += `<span style="color:${rating >= i ? '#f5b042' : '#ddd'}">★</span>`;
+    return s;
+}
+
+// ==================== FETCH WITH TIMEOUT + RETRY ====================
+async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const resp = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timer);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            return resp;
+        } catch (err) {
+            clearTimeout(timer);
+            if (err.name === 'AbortError') {
+                throw new Error('Kết nối quá chậm (timeout). Vui lòng thử lại.');
+            }
+            if (attempt === retries) throw err;
+            await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+        }
+    }
+}
+
+// ==================== IMAGE STORE ====================
+const IMG_PREFIX  = 'catfood_img_';
+const PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23fcf7f2'/%3E%3Ctext x='50%25' y='44%25' dominant-baseline='middle' text-anchor='middle' font-size='26' fill='%23d4b89a'%3E📷%3C/text%3E%3Ctext x='50%25' y='70%25' dominant-baseline='middle' text-anchor='middle' font-size='9' fill='%23c2a07e'%3EUpload%3C/text%3E%3C/svg%3E`;
+
+function getImage(name) {
+    if (imageStore[name]) return imageStore[name];
+    try {
+        const stored = localStorage.getItem(IMG_PREFIX + name);
+        if (stored) { imageStore[name] = stored; return stored; }
+    } catch (_) {}
+    return PLACEHOLDER;
+}
+function saveImage(name, b64) {
+    imageStore[name] = b64;
+    try { localStorage.setItem(IMG_PREFIX + name, b64); } catch (e) {
+        console.warn('localStorage đầy, ảnh chỉ lưu tạm trong session:', e);
+    }
+}
+
+// ==================== PRODUCT REVIEW API ====================
+async function fetchReviews(productName) {
+    if (reviewCache.has(productName)) return reviewCache.get(productName);
+    if (!REVIEWS_API_URL || REVIEWS_API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+        reviewCache.set(productName, []); return [];
+    }
+    try {
+        const resp = await fetchWithTimeout(
+            `${REVIEWS_API_URL}?productName=${encodeURIComponent(productName)}`
+        );
+        const json = await resp.json();
+        const raw = json.success ? (json.data || []) : [];
+        const reviews = raw.filter(r =>
+            typeof r.rating  === 'number' && r.rating >= 1 && r.rating <= 5 &&
+            typeof r.comment === 'string' && r.comment.length > 0 &&
+            r.comment.length <= MAX_COMMENT_LENGTH * 2
+        );
+        reviewCache.set(productName, reviews);
+        return reviews;
+    } catch (e) {
+        console.error('Không lấy được review:', e);
+        reviewCache.set(productName, []);
+        return [];
+    }
+}
+
+async function submitReview(productName, nickname, rating, duration, comment) {
+    const lastSubmit = parseInt(localStorage.getItem('lastReviewSubmit') || '0');
+    if (Date.now() - lastSubmit < REVIEW_COOLDOWN_MS) {
+        const wait = Math.ceil((REVIEW_COOLDOWN_MS - (Date.now() - lastSubmit)) / 1000);
+        throw new Error(`Vui lòng chờ ${wait} giây trước khi gửi đánh giá tiếp theo.`);
+    }
+    if (!comment || !comment.trim()) throw new Error('Vui lòng nhập nhận xét.');
+    if (comment.trim().length > MAX_COMMENT_LENGTH) throw new Error(`Nhận xét tối đa ${MAX_COMMENT_LENGTH} ký tự.`);
+    if (!rating || rating < 1 || rating > 5) throw new Error('Vui lòng chọn số sao hợp lệ.');
+
+    const resp = await fetchWithTimeout(REVIEWS_API_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ productName, nickname: nickname || 'Ẩn danh', rating, duration, comment: comment.trim() })
+    });
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.message || json.error || 'Có lỗi xảy ra.');
+    localStorage.setItem('lastReviewSubmit', String(Date.now()));
+    reviewCache.delete(productName);
+    return true;
+}
+
+// ==================== PRODUCT REVIEW HTML ====================
+function buildReviewsHtml(reviews) {
+    if (!reviews.length) return '<div class="review-loading">Chưa có đánh giá. Hãy là người đầu tiên!</div>';
+    return reviews.map(r => {
+        const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : '?';
+        return `<div class="review-item">
+            <div class="review-meta">
+                <span><strong>${escHtml(r.nickname || 'Ẩn danh')}</strong> · ${escHtml(r.duration || '?')} · ${date}</span>
+                <span class="review-stars">${starsHtml(r.rating)}</span>
+            </div>
+            <div class="review-comment">${escHtml(r.comment)}</div>
+        </div>`;
+    }).join('');
+}
+
+function buildReviewSectionHtml(productName, safeId) {
+    return `<div class="review-section" id="rs_${safeId}">
+        <div class="review-header">
+            <div class="rating-summary" id="rsum_${safeId}">💬 Chưa tải đánh giá</div>
+            <button class="btn-review-toggle" data-target="rform_${safeId}">✍️ Viết đánh giá</button>
+        </div>
+        <div id="rform_${safeId}" class="review-form">
+            <input type="text" id="nick_${safeId}" placeholder="Tên bạn (không bắt buộc)" maxlength="50" autocomplete="off">
+            <select id="rat_${safeId}">
+                <option value="5">★★★★★ 5 sao – Xuất sắc</option>
+                <option value="4">★★★★☆ 4 sao – Tốt</option>
+                <option value="3">★★★☆☆ 3 sao – Tạm ổn</option>
+                <option value="2">★★☆☆☆ 2 sao – Không ổn</option>
+                <option value="1">★☆☆☆☆ 1 sao – Rất tệ</option>
+            </select>
+            <input type="text" id="dur_${safeId}" placeholder="Thời gian dùng (VD: 2 tuần, 3 tháng)" maxlength="50" autocomplete="off">
+            <textarea id="cmt_${safeId}" rows="2" placeholder="Nhận xét của bạn (tối đa ${MAX_COMMENT_LENGTH} ký tự)…" maxlength="${MAX_COMMENT_LENGTH}"></textarea>
+            <div class="char-count" id="char_${safeId}">0 / ${MAX_COMMENT_LENGTH}</div>
+            <div class="review-form-actions">
+                <button class="btn-submit-review" data-product="${escHtml(productName)}" data-sid="${safeId}">📝 Gửi đánh giá</button>
+                <button class="btn-cancel-review" data-target="rform_${safeId}">Hủy</button>
+            </div>
+        </div>
+        <div id="rl_${safeId}" class="review-list">
+            <div class="review-placeholder" data-product="${escHtml(productName)}" data-sid="${safeId}">
+                💬 Nhấn để xem đánh giá từ cộng đồng…
+            </div>
+        </div>
+    </div>`;
+}
+
+async function loadReviewsIntoSection(productName, safeId) {
+    const listEl = document.getElementById(`rl_${safeId}`);
+    const sumEl  = document.getElementById(`rsum_${safeId}`);
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="review-loading">⏳ Đang tải đánh giá…</div>';
+    const reviews = await fetchReviews(productName);
+
+    const total     = reviews.length;
+    const avg       = total ? (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : 0;
+    const recommend = total ? Math.round(reviews.filter(r => r.rating >= 4).length / total * 100) : 0;
+
+    if (sumEl) {
+        sumEl.innerHTML = total
+            ? `${starsHtml(Math.round(avg))} ${avg}/5 (${total} đánh giá) · 👍 ${recommend}% khuyến nghị`
+            : '💬 Chưa có đánh giá';
+    }
+    listEl.innerHTML = buildReviewsHtml(reviews);
+}
+
+// ==================== WEBSITE REVIEW API ====================
+const WR_COOLDOWN_KEY = 'lastWebsiteReviewSubmit';
+
+async function fetchWebsiteReviews() {
+    if (!REVIEWS_API_URL || REVIEWS_API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') return [];
+    try {
+        const resp = await fetchWithTimeout(`${REVIEWS_API_URL}?type=website`);
+        const json = await resp.json();
+        if (!json.success) return [];
+        return (json.data || []).filter(r =>
+            typeof r.rating  === 'number' && r.rating >= 1 && r.rating <= 5 &&
+            typeof r.comment === 'string' && r.comment.length > 0
+        );
+    } catch (e) {
+        console.error('Không lấy được website review:', e);
+        return [];
+    }
+}
+
+async function submitWebsiteReview(nickname, rating, comment) {
+    // Kiểm tra cooldown
+    const lastSubmit = parseInt(localStorage.getItem(WR_COOLDOWN_KEY) || '0');
+    if (Date.now() - lastSubmit < REVIEW_COOLDOWN_MS) {
+        const wait = Math.ceil((REVIEW_COOLDOWN_MS - (Date.now() - lastSubmit)) / 1000);
+        throw new Error(`Vui lòng chờ ${wait} giây trước khi gửi góp ý tiếp theo.`);
+    }
+
+    // Kiểm tra dữ liệu
+    const trimmed = (comment || '').trim();
+    if (trimmed.length < 5) throw new Error('Nhận xét phải có ít nhất 5 ký tự.');
+    if (trimmed.length > MAX_COMMENT_LENGTH) throw new Error(`Nhận xét tối đa ${MAX_COMMENT_LENGTH} ký tự.`);
+    if (!rating || rating < 1 || rating > 5) throw new Error('Vui lòng chọn số sao.');
+
+    if (!REVIEWS_API_URL || REVIEWS_API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+        throw new Error('Chưa cấu hình API URL.');
+    }
+
+    const resp = await fetchWithTimeout(REVIEWS_API_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+            type: 'website',
+            nickname: (nickname || '').trim() || 'Ẩn danh',
+            rating,
+            comment: trimmed
+        })
+    });
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.message || json.error || 'Có lỗi xảy ra khi gửi.');
+
+    localStorage.setItem(WR_COOLDOWN_KEY, String(Date.now()));
+    return true;
+}
+
+function renderWebsiteReviews(reviews) {
+    const listEl   = document.getElementById('wrList');
+    const sumEl    = document.getElementById('wrSummaryBar');
+    if (!listEl || !sumEl) return;
+
+    const total     = reviews.length;
+    const avg       = total ? (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : 0;
+    const recommend = total ? Math.round(reviews.filter(r => r.rating >= 4).length / total * 100) : 0;
+
+    // Summary bar
+    if (total > 0) {
+        sumEl.innerHTML = `
+            <span class="wr-avg-score">${avg}</span>
+            <span>${starsHtml(Math.round(parseFloat(avg)))}</span>
+            <span style="font-size:0.76rem;color:var(--muted);font-weight:400">${total} góp ý · 👍 ${recommend}% tích cực</span>`;
+    } else {
+        sumEl.innerHTML = '<span style="color:var(--muted);font-weight:400;font-size:0.8rem">Chưa có góp ý nào. Hãy là người đầu tiên! 🐾</span>';
+    }
+
+    // Review list
+    if (total === 0) {
+        listEl.innerHTML = '<div class="wr-empty">😺 Chưa có ai góp ý. Bạn thấy trang web thế nào?</div>';
+        return;
+    }
+
+    listEl.innerHTML = reviews.map(r => {
+        const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : '?';
+        return `<div class="wr-item">
+            <div class="wr-item-meta">
+                <span class="wr-item-nick">${escHtml(r.nickname || 'Ẩn danh')}</span>
+                <span class="wr-item-date">${date}</span>
+            </div>
+            <div class="wr-item-stars">${starsHtml(r.rating)}</div>
+            <div class="wr-item-comment" style="margin-top:5px">${escHtml(r.comment)}</div>
+        </div>`;
+    }).join('');
+}
+
+async function loadWebsiteReviews() {
+    const listEl = document.getElementById('wrList');
+    const sumEl  = document.getElementById('wrSummaryBar');
+    if (listEl) listEl.innerHTML = '<div class="wr-loading">⏳ Đang tải…</div>';
+    if (sumEl)  sumEl.innerHTML  = '<span style="color:var(--muted);font-size:0.8rem">⏳ Đang tải đánh giá…</span>';
+
+    const reviews = await fetchWebsiteReviews();
+    renderWebsiteReviews(reviews);
+}
+
+function initWebsiteReviewForm() {
+    const commentEl  = document.getElementById('wrComment');
+    const charEl     = document.getElementById('wrCharCount');
+    const submitBtn  = document.getElementById('wrSubmitBtn');
+    const successMsg = document.getElementById('wrSuccessMsg');
+    const errorMsg   = document.getElementById('wrErrorMsg');
+
+    // Char counter
+    commentEl.addEventListener('input', () => {
+        const len = commentEl.value.length;
+        charEl.textContent = `${len} / ${MAX_COMMENT_LENGTH}`;
+        charEl.className   = 'wr-char-count' + (len > MAX_COMMENT_LENGTH * 0.9 ? ' warn' : '');
+    });
+
+    // Submit
+    submitBtn.addEventListener('click', async () => {
+        // Đọc dữ liệu form
+        const nickname = document.getElementById('wrNick').value.trim();
+        const comment  = commentEl.value;
+        const ratingEl = document.querySelector('input[name="wrRating"]:checked');
+        const rating   = ratingEl ? parseInt(ratingEl.value) : 0;
+
+        // Reset thông báo
+        successMsg.classList.remove('show');
+        errorMsg.classList.remove('show');
+
+        submitBtn.disabled    = true;
+        submitBtn.textContent = '⏳ Đang gửi…';
+
+        try {
+            await submitWebsiteReview(nickname, rating, comment);
+            successMsg.classList.add('show');
+            // Reset form
+            document.getElementById('wrNick').value    = '';
+            commentEl.value                             = '';
+            charEl.textContent                          = `0 / ${MAX_COMMENT_LENGTH}`;
+            charEl.className                            = 'wr-char-count';
+            // Reset sao về 3
+            const star3 = document.getElementById('wrStar3');
+            if (star3) star3.checked = true;
+            // Reload danh sách
+            await loadWebsiteReviews();
+        } catch (err) {
+            errorMsg.textContent = `❌ ${err.message}`;
+            errorMsg.classList.add('show');
+        } finally {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = '📨 Gửi góp ý';
+        }
+    });
+}
+
+// ==================== CSV LOADING ====================
+async function loadProductsFromCSV() {
+    if (!CSV_URL || CSV_URL === 'YOUR_GOOGLE_SHEETS_CSV_LINK') return null;
+    const resp = await fetchWithTimeout(CSV_URL);
+    const text = await resp.text();
+
+    return new Promise((resolve, reject) => {
+        Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: h => h.trim().replace(/^\uFEFF/, ''),
+            transform: v => v.trim(),
+            complete: result => {
+                const prods = [];
+                for (const row of result.data) {
+                    const priceMin = parseFloat(row.priceMin);
+                    const priceMax = parseFloat(row.priceMax);
+                    if (!row.name || isNaN(priceMin) || isNaN(priceMax)) continue;
+                    prods.push({
+                        name:               row.name,
+                        brand:              row.brand              || '',
+                        priceMin,           priceMax,
+                        lastUpdated:        row.lastUpdated        || '',
+                        proteinDMB:         parseFloat(row.proteinDMB)    || 0,
+                        fatDMB:             parseFloat(row.fatDMB)        || 0,
+                        ashAsfed:           parseFloat(row.ashAsfed)      || 0,
+                        magieAsfed:         parseFloat(row.magieAsfed)    || 0,
+                        phosphorusDMB:      parseFloat(row.phosphorusDMB) || 0,
+                        carbDMB:            parseFloat(row.carbDMB)       || 0,
+                        diseases:           row.diseases    ? row.diseases.split(';').map(s => s.trim()).filter(Boolean) : [],
+                        pros:               row.pros        ? row.pros.split(';').map(s => s.trim()).filter(Boolean)     : [],
+                        cons:               row.cons        ? row.cons.split(';').map(s => s.trim()).filter(Boolean)     : [],
+                        verdict:            row.verdict            || '',
+                        priceReview:        row.priceReview        || '',
+                        alternatives:       row.alternatives       || '',
+                        note:               row.note               || '',
+                        ingredientAnalysis: row.ingredientAnalysis || '',
+                        pitfalls:           row.pitfalls           || '',
+                    });
+                }
+                if (prods.length === 0) reject(new Error('Không tìm thấy sản phẩm hợp lệ trong sheet. Kiểm tra lại cột dữ liệu.'));
+                else resolve(prods);
+            },
+            error: err => reject(new Error(err.message))
+        });
+    });
+}
+
+// ==================== FILTER + SORT ====================
+let state = { search: '', price: 'all', selectedDiseases: [], sort: 'default' };
+
+function applyFilterSort() {
+    const q = state.search;
+    filteredData = productsData.filter(p => {
+        const matchName    = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+        const matchPrice   = state.price === 'all'      ? true
+                           : state.price === 'under200' ? p.priceMin < 200000
+                           : state.price === '200_300'  ? (p.priceMin >= 200000 && p.priceMin <= 300000)
+                           :                              p.priceMin > 300000;
+        const matchDisease = state.selectedDiseases.length === 0
+                           || state.selectedDiseases.every(d => p.diseases.includes(d));
+        return matchName && matchPrice && matchDisease;
+    });
+    const sorters = {
+        price_asc:    (a, b) => a.priceMin - b.priceMin,
+        price_desc:   (a, b) => b.priceMin - a.priceMin,
+        protein_desc: (a, b) => b.proteinDMB - a.proteinDMB,
+        carb_asc:     (a, b) => a.carbDMB - b.carbDMB,
+    };
+    if (sorters[state.sort]) filteredData.sort(sorters[state.sort]);
+}
+
+// ==================== BUILD CARD ====================
+function buildCardHtml(p, globalIdx) {
+    const checked  = selectedProducts.has(globalIdx) ? 'checked' : '';
+    const imageUrl = getImage(p.name);
+    const badges   = p.diseases.map(d => `<span class="badge disease">${escHtml(diseaseMap[d] || d)}</span>`).join('');
+    const safeId   = `rv_${globalIdx}`;
+
+    return `<div class="card" data-gidx="${globalIdx}">
+        <input type="checkbox" class="compare-checkbox" data-gidx="${globalIdx}" ${checked} aria-label="So sánh ${escHtml(p.name)}">
+        <div class="card-content">
+            <div class="card-header">
+                <div class="product-image-wrapper" data-name="${escHtml(p.name)}" title="Nhấn để upload ảnh bao bì" role="button" tabindex="0" aria-label="Upload ảnh cho ${escHtml(p.name)}">
+                    <img class="product-image" src="${imageUrl}" alt="${escHtml(p.name)}" loading="lazy">
+                    <div class="image-overlay">📷 Upload ảnh</div>
+                </div>
+                <div class="product-info">
+                    <h3>${escHtml(p.name)}</h3>
+                    <div class="brand">${escHtml(p.brand)}</div>
+                    <div class="price-tag">💰 ${priceDisplay(p)} <span class="updated">(${escHtml(p.lastUpdated)})</span></div>
+                </div>
+            </div>
+            <div class="stats">
+                <span class="stat">🥩 Đạm DMB: ${p.proteinDMB}%</span>
+                <span class="stat">🧈 Béo DMB: ${p.fatDMB}%</span>
+                <span class="stat">⚙️ Tro as-fed: ${p.ashAsfed}%</span>
+                <span class="stat">🔬 Magie: ${p.magieAsfed}%</span>
+                <span class="stat">🫀 Photpho: ${p.phosphorusDMB}%</span>
+                <span class="stat">🍚 Carb DMB: ${p.carbDMB}%</span>
+            </div>
+            <div class="badge-container">${badges}</div>
+            <details>
+                <summary>🔍 Phân tích chuyên sâu</summary>
+                <div class="review-detail">
+                    <div class="pros-text"><strong>✅ Điểm cộng:</strong> ${escHtml(p.pros.join('; '))}</div>
+                    <div class="cons-text"><strong>❌ Điểm trừ:</strong> ${escHtml(p.cons.join('; '))}</div>
+                    <div class="verdict-text"><strong>🎯 Kết luận:</strong> ${escHtml(p.verdict)}</div>
+                    <div class="plain-row"><strong>💰 Nhận xét giá:</strong> ${escHtml(p.priceReview)}</div>
+                    <div class="plain-row"><strong>🔄 Có thể thay bằng:</strong> ${escHtml(p.alternatives)}</div>
+                    <div class="caution-text"><strong>💧 Lưu ý:</strong> ${escHtml(p.note)}</div>
+                    <div class="plain-row"><strong>🔬 Nguyên liệu:</strong> ${escHtml(p.ingredientAnalysis)}</div>
+                    <div class="caution-text"><strong>⚠️ Cạm bẫy:</strong> ${escHtml(p.pitfalls)}</div>
+                </div>
+            </details>
+            ${buildReviewSectionHtml(p.name, safeId)}
+        </div>
+    </div>`;
+}
+
+// ==================== RENDER CARDS ====================
+function renderCards() {
+    applyFilterSort();
+    const container = document.getElementById('productContainer');
+    const countEl   = document.getElementById('resultCount');
+    countEl.textContent = `📋 Tìm thấy ${filteredData.length} loại hạt`;
+
+    if (filteredData.length === 0) {
+        container.innerHTML = '<div class="no-result">😿 Không tìm thấy hạt nào đáp ứng tiêu chí đã chọn.</div>';
+        return;
+    }
+
+    container.innerHTML = filteredData.map(p => {
+        const globalIdx = productsData.indexOf(p);
+        return buildCardHtml(p, globalIdx);
+    }).join('');
+
+    requestIdleCallback
+        ? requestIdleCallback(() => applyGlossaryTooltips(container))
+        : setTimeout(() => applyGlossaryTooltips(container), 0);
+
+    updateCompareButton();
+}
+
+// ==================== EVENT DELEGATION ====================
+function initEventDelegation() {
+    const container = document.getElementById('productContainer');
+
+    container.addEventListener('click', async e => {
+
+        // 1. Upload ảnh
+        const wrapper = e.target.closest('.product-image-wrapper');
+        if (wrapper && !e.target.classList.contains('compare-checkbox')) {
+            const productName = wrapper.dataset.name;
+            const inp = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png,image/webp' });
+            inp.onchange = () => {
+                const file = inp.files[0];
+                if (!file) return;
+                if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+                    alert(`Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn ${MAX_IMAGE_SIZE_MB}MB.`);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    saveImage(productName, ev.target.result);
+                    document.querySelectorAll(`.product-image-wrapper[data-name="${CSS.escape(productName)}"] .product-image`)
+                        .forEach(img => { img.src = ev.target.result; });
+                };
+                reader.readAsDataURL(file);
+            };
+            inp.click();
+            return;
+        }
+
+        // 2. Lazy load review placeholder
+        const ph = e.target.closest('.review-placeholder');
+        if (ph) {
+            const { product, sid } = ph.dataset;
+            ph.remove();
+            await loadReviewsIntoSection(product, sid);
+            return;
+        }
+
+        // 3. Toggle review form
+        const toggleBtn = e.target.closest('.btn-review-toggle');
+        if (toggleBtn) {
+            const form = document.getElementById(toggleBtn.dataset.target);
+            if (form) form.classList.toggle('open');
+            return;
+        }
+
+        // 4. Cancel review form
+        const cancelBtn = e.target.closest('.btn-cancel-review');
+        if (cancelBtn) {
+            const form = document.getElementById(cancelBtn.dataset.target);
+            if (form) form.classList.remove('open');
+            return;
+        }
+
+        // 5. Submit review
+        const submitBtn = e.target.closest('.btn-submit-review');
+        if (submitBtn) {
+            const { product, sid } = submitBtn.dataset;
+            const nick    = document.getElementById(`nick_${sid}`)?.value.trim() || '';
+            const rating  = parseInt(document.getElementById(`rat_${sid}`)?.value);
+            const dur     = document.getElementById(`dur_${sid}`)?.value.trim() || '';
+            const comment = document.getElementById(`cmt_${sid}`)?.value || '';
+
+            submitBtn.disabled    = true;
+            submitBtn.textContent = '⏳ Đang gửi…';
+            try {
+                await submitReview(product, nick, rating, dur, comment);
+                alert('✅ Cảm ơn bạn! Đánh giá đã được lưu.');
+                const form = document.getElementById(`rform_${sid}`);
+                if (form) form.classList.remove('open');
+                await loadReviewsIntoSection(product, sid);
+            } catch (err) {
+                alert(`❌ ${err.message}`);
+            } finally {
+                submitBtn.disabled    = false;
+                submitBtn.textContent = '📝 Gửi đánh giá';
+            }
+            return;
+        }
+
+        // 6. Tooltip toggle (mobile)
+        const tt = e.target.closest('.tt');
+        if (tt) {
+            e.stopPropagation();
+            const wasActive = tt.classList.contains('active');
+            document.querySelectorAll('.tt.active').forEach(el => el.classList.remove('active'));
+            if (!wasActive) tt.classList.add('active');
+            return;
+        }
+
+        document.querySelectorAll('.tt.active').forEach(el => el.classList.remove('active'));
+    });
+
+    container.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const wrapper = e.target.closest('.product-image-wrapper');
+            if (wrapper) wrapper.click();
+        }
+    });
+
+    container.addEventListener('change', e => {
+        const cb = e.target.closest('.compare-checkbox');
+        if (!cb) return;
+        const gidx = parseInt(cb.dataset.gidx);
+        if (cb.checked) {
+            if (selectedProducts.size >= MAX_COMPARE) {
+                alert(`Chỉ được chọn tối đa ${MAX_COMPARE} sản phẩm để so sánh.`);
+                cb.checked = false;
+                return;
+            }
+            selectedProducts.add(gidx);
+        } else {
+            selectedProducts.delete(gidx);
+        }
+        updateCompareButton();
+    });
+
+    container.addEventListener('input', e => {
+        const ta = e.target.closest('textarea');
+        if (!ta || !ta.id.startsWith('cmt_')) return;
+        const sid   = ta.id.replace('cmt_', '');
+        const count = ta.value.length;
+        const el    = document.getElementById(`char_${sid}`);
+        if (el) {
+            el.textContent = `${count} / ${MAX_COMMENT_LENGTH}`;
+            el.className   = 'char-count' + (count > MAX_COMMENT_LENGTH * 0.9 ? ' warn' : '');
+        }
+    });
+}
+
+// ==================== COMPARE ====================
+function cellClass(vals, val, higher) {
+    const unique = [...new Set(vals.filter(v => isFinite(v)))];
+    if (unique.length <= 1) return '';
+    const best  = higher ? Math.max(...unique) : Math.min(...unique);
+    const worst = higher ? Math.min(...unique) : Math.max(...unique);
+    if (val === best)  return 'cell-best';
+    if (val === worst) return 'cell-worst';
+    return '';
+}
+
+function showCompare() {
+    if (selectedProducts.size < 2) return;
+    const sel = [...selectedProducts].map(i => productsData[i]);
+
+    const numFields = [
+        { key: 'priceMin',      label: '💰 Giá min',          higher: false, fmt: v => fmt(v) },
+        { key: 'proteinDMB',    label: '🥩 Protein DMB (%)',  higher: true,  fmt: v => v + '%' },
+        { key: 'fatDMB',        label: '🧈 Béo DMB (%)',       higher: null,  fmt: v => v + '%' },
+        { key: 'ashAsfed',      label: '⚙️ Tro as-fed (%)',   higher: false, fmt: v => v + '%' },
+        { key: 'magieAsfed',    label: '🔬 Magie (%)',         higher: false, fmt: v => v + '%' },
+        { key: 'phosphorusDMB', label: '🫀 Photpho DMB (%)',  higher: false, fmt: v => v + '%' },
+        { key: 'carbDMB',       label: '🍚 Carb DMB (%)',      higher: false, fmt: v => v + '%' },
+    ];
+    const txtFields = [
+        { key: 'pros',               label: '✅ Điểm cộng' },
+        { key: 'cons',               label: '❌ Điểm trừ' },
+        { key: 'verdict',            label: '🎯 Kết luận' },
+        { key: 'priceReview',        label: '💰 Nhận xét giá' },
+        { key: 'alternatives',       label: '🔄 Thay thế' },
+        { key: 'note',               label: '💧 Lưu ý' },
+        { key: 'ingredientAnalysis', label: '🔬 Nguyên liệu' },
+        { key: 'pitfalls',           label: '⚠️ Cạm bẫy' },
+    ];
+
+    let html = `<table class="compare-table"><thead><tr><th>Tiêu chí</th>`;
+    html += sel.map(p => `<th>${escHtml(p.name)}<br><small style="font-weight:400;color:var(--muted)">${escHtml(p.brand)}</small></th>`).join('');
+    html += `</tr></thead><tbody>`;
+    html += `<tr><td>💰 Giá /kg</td>${sel.map(p => `<td>${priceDisplay(p)}<br><small style="color:var(--muted)">${escHtml(p.lastUpdated)}</small></td>`).join('')}</tr>`;
+    numFields.forEach(f => {
+        const vals = sel.map(p => p[f.key]);
+        html += `<tr><td>${f.label}</td>${sel.map(p => `<td class="${cellClass(vals, p[f.key], f.higher)}">${f.fmt(p[f.key])}</td>`).join('')}</tr>`;
+    });
+    txtFields.forEach(f => {
+        html += `<tr><td>${f.label}</td>${sel.map(p => {
+            const val = Array.isArray(p[f.key]) ? p[f.key].join('; ') : p[f.key];
+            return `<td>${escHtml(val)}</td>`;
+        }).join('')}</tr>`;
+    });
+    html += `<tr><td>🩺 Phù hợp với</td>${sel.map(p =>
+        `<td>${p.diseases.map(d => escHtml(diseaseMap[d] || d)).join(', ') || '—'}</td>`
+    ).join('')}</tr>`;
+    html += `</tbody></table>`;
+
+    document.getElementById('compareTableContainer').innerHTML = html;
+    document.getElementById('compareModal').classList.add('open');
+    document.getElementById('closeModalBtn').focus();
+    applyGlossaryTooltips(document.getElementById('compareTableContainer'));
+}
+
+function closeModal() {
+    document.getElementById('compareModal').classList.remove('open');
+}
+
+// ==================== GLOSSARY TOOLTIP ====================
+function applyGlossaryTooltips(container) {
+    if (!container) return;
+
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: n => {
+            let p = n.parentElement;
+            while (p && p !== container) {
+                const tag = p.tagName;
+                if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'INPUT' ||
+                    tag === 'TEXTAREA' || tag === 'SELECT' ||
+                    p.classList?.contains('tt')) return NodeFilter.FILTER_REJECT;
+                p = p.parentElement;
+            }
+            return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+        }
+    });
+
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    for (const node of nodes) {
+        let text = node.nodeValue;
+        const placeholders = [];
+        let changed = false;
+
+        for (const g of GLOSSARY) {
+            const escapedTerm = g.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(?<![\\w\\-])(${escapedTerm})(?![\\w\\-])`, 'gi');
+            if (!re.test(text)) continue;
+            changed = true;
+            text = text.replace(
+                new RegExp(`(?<![\\w\\-])(${escapedTerm})(?![\\w\\-])`, 'gi'),
+                match => {
+                    const idx = placeholders.length;
+                    placeholders.push(
+                        `<span class="tt" tabindex="0" role="term">${escHtml(match)}<span class="tt-box" role="tooltip">${escHtml(g.def)}</span></span>`
+                    );
+                    return `\x00${idx}\x00`;
+                }
+            );
+        }
+
+        if (!changed) continue;
+
+        const parts = text.split(/\x00(\d+)\x00/);
+        let html = '';
+        for (let i = 0; i < parts.length; i++) {
+            if (i % 2 === 0) {
+                html += escHtml(parts[i]);
+            } else {
+                html += placeholders[parseInt(parts[i])];
+            }
+        }
+
+        const span = document.createElement('span');
+        span.innerHTML = html;
+        node.parentNode.replaceChild(span, node);
+    }
+
+    positionTooltipsOnHover(container);
+}
+
+function positionTooltipsOnHover(container) {
+    container.querySelectorAll('.tt').forEach(tt => {
+        if (tt.dataset.tooltipBound) return;
+        tt.dataset.tooltipBound = '1';
+
+        const box = tt.querySelector('.tt-box');
+        if (!box) return;
+
+        const updatePos = () => {
+            const rect    = tt.getBoundingClientRect();
+            const boxW    = 260;
+            const margin  = 8;
+            const spaceAbove = rect.top;
+
+            let left = rect.left + rect.width / 2 - boxW / 2;
+            left = Math.max(margin, Math.min(left, window.innerWidth - boxW - margin));
+            box.style.left = left + 'px';
+
+            if (spaceAbove >= 100) {
+                box.style.top    = '';
+                box.style.bottom = (window.innerHeight - rect.top + margin) + 'px';
+            } else {
+                box.style.bottom = '';
+                box.style.top    = (rect.bottom + margin) + 'px';
+            }
+        };
+
+        tt.addEventListener('mouseenter', updatePos);
+        tt.addEventListener('focus',      updatePos);
+    });
+}
+
+// ==================== EXPORT CSV ====================
+function exportFilteredCSV() {
+    if (!filteredData.length) { alert('Không có dữ liệu để xuất.'); return; }
+    const headers = ['Tên','Thương hiệu','Giá min (đ/kg)','Giá max (đ/kg)','Protein DMB%','Béo DMB%','Tro as-fed%','Magie%','Photpho DMB%','Carb DMB%','Phù hợp với','Cập nhật'];
+    const rows = filteredData.map(p => [
+        p.name, p.brand, p.priceMin, p.priceMax,
+        p.proteinDMB, p.fatDMB, p.ashAsfed, p.magieAsfed, p.phosphorusDMB, p.carbDMB,
+        p.diseases.map(d => diseaseMap[d] || d).join('; '),
+        p.lastUpdated
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`));
+    const csv  = '\uFEFF' + [headers, ...rows].map(r => r.join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `hat-meo-loc-${new Date().toISOString().slice(0,10)}.csv`
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ==================== UI HELPERS ====================
+function updateCompareButton() {
+    const n = selectedProducts.size;
+    document.getElementById('compareBtn').disabled = n < 2;
+    document.getElementById('selectedCountInfo').textContent =
+        n >= 2 ? `✅ Đã chọn ${n} sản phẩm. Nhấn so sánh.`
+               : `📌 Chọn ít nhất 2 sản phẩm (hiện ${n}).`;
+}
+
+function computePrice() {
+    const p   = +document.getElementById('toolPrice').value;
+    const w   = +document.getElementById('toolWeight').value;
+    const out = document.getElementById('pricePerKgResult');
+    if (!isFinite(p) || !isFinite(w) || w <= 0) { out.textContent = '⚠️ Nhập số hợp lệ'; return; }
+    out.textContent = (p / w).toLocaleString('vi-VN') + ' đ/kg';
+}
+
+function buildCheckboxGroup() {
+    const c = document.getElementById('diseaseCheckboxes');
+    allDiseaseOptions.forEach(opt => {
+        const l = document.createElement('label');
+        l.innerHTML = `<input type="checkbox" value="${escHtml(opt.value)}"> ${opt.label}`;
+        c.appendChild(l);
+    });
+    c.addEventListener('change', () => {
+        state.selectedDiseases = [...c.querySelectorAll('input:checked')].map(cb => cb.value);
+        renderCards();
+    });
+}
+
+function showError(msg) {
+    document.getElementById('productContainer').innerHTML =
+        `<div class="error-state">❌ ${escHtml(msg)}<code>Kiểm tra link CSV và publish sheet.</code>
+        <br><button class="retry-btn" onclick="init()">🔄 Thử lại</button></div>`;
+    document.getElementById('resultCount').textContent = 'Lỗi tải dữ liệu';
+}
+
+function debounce(fn, delay) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+
+// ==================== STATIC CONTROLS ====================
+function initStaticControls() {
+    document.getElementById('searchName').addEventListener('input', debounce(e => {
+        state.search = e.target.value.trim().toLowerCase();
+        renderCards();
+    }, 280));
+    document.getElementById('priceFilter').addEventListener('change', e => {
+        state.price = e.target.value; renderCards();
+    });
+    document.getElementById('sortSelect').addEventListener('change', e => {
+        state.sort = e.target.value; renderCards();
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        state = { search: '', price: 'all', selectedDiseases: [], sort: 'default' };
+        document.getElementById('searchName').value  = '';
+        document.getElementById('priceFilter').value = 'all';
+        document.getElementById('sortSelect').value  = 'default';
+        document.querySelectorAll('#diseaseCheckboxes input').forEach(cb => cb.checked = false);
+        renderCards();
+    });
+    document.getElementById('compareBtn').addEventListener('click', showCompare);
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('compareModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('calcPriceBtn').addEventListener('click', computePrice);
+    ['toolPrice', 'toolWeight'].forEach(id => {
+        document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') computePrice(); });
+    });
+    document.getElementById('exportBtn').addEventListener('click', exportFilteredCSV);
+}
+
+// ==================== INIT ====================
+async function init() {
+    document.getElementById('productContainer').innerHTML =
+        '<div class="loading-state"><div class="spinner"></div><p>Đang đọc dữ liệu từ Google Sheets…</p></div>';
+    document.getElementById('resultCount').textContent = '📋 Đang tải dữ liệu…';
+
+    if (!CSV_URL || CSV_URL === 'YOUR_GOOGLE_SHEETS_CSV_LINK') {
+        document.getElementById('productContainer').innerHTML =
+            `<div class="error-state">📋 Chưa cấu hình nguồn dữ liệu.<br><code>Publish Google Sheets (CSV) và dán link vào biến <strong>CSV_URL</strong>.</code></div>`;
+        document.getElementById('resultCount').textContent = '⚠️ Chưa có dữ liệu sản phẩm';
+        return;
+    }
+    try {
+        productsData = await loadProductsFromCSV();
+        renderCards();
+    } catch (e) {
+        showError(e.message);
+    }
+}
+
+// Khởi động
+buildCheckboxGroup();
+initStaticControls();
+initEventDelegation();
+initWebsiteReviewForm();   // ← MỚI: khởi động form góp ý web
+loadWebsiteReviews();      // ← MỚI: tải đánh giá web khi load trang
+init();
+</script>
+</body>
+</html>
